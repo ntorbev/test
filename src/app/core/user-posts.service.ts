@@ -6,8 +6,9 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class UserPostsService {
-  static topTen: string[];
+  topTen = {};
   posts: string;
+  sortedWords: string[];
 
   constructor(private http: HttpClient) {
   }
@@ -16,12 +17,12 @@ export class UserPostsService {
     return this.http.get(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`).pipe(
       tap((posts: any) => {
         posts.forEach(post => this.posts += post.body);
-        UserPostsService.topTen = this.getFrequency2(this.posts, 10);
+        this.getFrequency2(this.posts, 10);
       })
     );
   }
 
-  getFrequency2(string, cutOff) {
+  getFrequency2(string, cutOff): void {
     const cleanString = string.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, '');
     let words = cleanString.split(' ');
     const frequencies = {};
@@ -35,8 +36,11 @@ export class UserPostsService {
 
     words = Object.keys(frequencies);
 
-    return words.sort(function (a, b) {
+    this.sortedWords = words.sort(function (a, b) {
       return frequencies[b] - frequencies[a];
     }).slice(0, cutOff);
+
+    const that = this;
+    this.sortedWords.forEach(x => that.topTen[x] = (frequencies[x] / words.length) * 100);
   }
 }

@@ -1,44 +1,44 @@
-import { Component } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Component, OnInit } from '@angular/core';
+import { UserPostsService } from 'src/app/core/user-posts.service';
+import { UsersService } from 'src/app/core/users.service';
+
+@Component({
+  selector: 'app-table-post',
+  styleUrls: ['table-post.component.scss'],
+  templateUrl: 'table-post.component.html',
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', display: 'none' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
+})
+export class TablePostComponent implements OnInit {
+  dataSource: any;
+  columnsToDisplay = ['title'];
+  expandedElement: PeriodicElement;
+  private test: {};
+
+  constructor(private userPostsService: UserPostsService, private usersService: UsersService) {
+  }
+
+  ngOnInit(): void {
+    this.userPostsService.getPosts(this.usersService.userSelected.id).subscribe(post => {
+      this.dataSource = post;
+      this.test = this.userPostsService.topTen;
+      debugger;
+    });
+  }
+}
+
 
 export interface PeriodicElement {
   name: string;
   position: number;
   weight: number;
   symbol: string;
+  description: string;
 }
 
-const ELEMENT_DATA: PeriodicElement[] = [
-  { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
-  { position: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },
-  { position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },
-  { position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },
-  { position: 5, name: 'Boron', weight: 10.811, symbol: 'B' },
-  { position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C' },
-  { position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N' },
-  { position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O' },
-  { position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F' },
-  { position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne' },
-];
-
-/**
- * @title Table with filtering
- */
-@Component({
-  selector: 'app-table-post',
-  styleUrls: ['table-post.component.css'],
-  templateUrl: 'table-post.component.html',
-})
-export class TablePostComponent {
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
-
-  applyFilter(filterValue: string) {
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-  }
-}
-
-
-/**  Copyright 2018 Google Inc. All Rights Reserved.
- Use of this source code is governed by an MIT-style license that
- can be found in the LICENSE file at http://angular.io/license */

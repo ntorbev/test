@@ -1,5 +1,6 @@
-import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule, Optional, SkipSelf } from '@angular/core';
+import { UsersService } from 'src/app/core/users.service';
 
 function throwIfAlreadyLoaded(parentModule: any, moduleName: string) {
   if (parentModule) {
@@ -10,7 +11,8 @@ function throwIfAlreadyLoaded(parentModule: any, moduleName: string) {
   declarations: [],
   imports: [
     CommonModule
-  ]
+  ],
+  providers: [UsersService]
 })
 export class CoreModule {
   constructor(@Optional() @SkipSelf() parentModule: CoreModule) {

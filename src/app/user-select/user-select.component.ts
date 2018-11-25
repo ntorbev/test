@@ -1,60 +1,50 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { debounceTime, map, startWith, switchMap, timeout } from 'rxjs/operators';
+import { UserPostsService } from 'src/app/core/user-posts.service';
+import { UsersService } from 'src/app/core/users.service';
+
 export interface State {
   flag: string;
   name: string;
   population: string;
 }
+
 @Component({
   selector: 'app-user-select',
   templateUrl: './user-select.component.html',
   styleUrls: ['./user-select.component.scss']
 })
-export class UserSelectComponent {
-  stateCtrl = new FormControl();
-  filteredStates: Observable<State[]>;
+export class UserSelectComponent implements OnInit {
+  userCtrl = new FormControl();
+  users: any;
+  filteredUsers: Observable<string[]>;
 
-  states: State[] = [
-    {
-      name: 'Arkansas',
-      population: '2.978M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_Arkansas.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Flag_of_Arkansas.svg'
-    },
-    {
-      name: 'California',
-      population: '39.14M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_California.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Flag_of_California.svg'
-    },
-    {
-      name: 'Florida',
-      population: '20.27M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_Florida.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Flag_of_Florida.svg'
-    },
-    {
-      name: 'Texas',
-      population: '27.47M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_Texas.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Flag_of_Texas.svg'
-    }
-  ];
-
-  constructor() {
-    this.filteredStates = this.stateCtrl.valueChanges
-      .pipe(
-        startWith(''),
-        map(state => state ? this._filterStates(state) : this.states.slice())
-      );
+  constructor(private usersService: UsersService, private userPostservice: UserPostsService) {
   }
 
-  private _filterStates(value: string): State[] {
+  ngOnInit(): void {
+    this.usersService.getUsers().subscribe(res => {
+      this.users = res;
+      this.usersService.users = res;
+    });
+    setTimeout(() => {
+      this.filteredUsers = this.userCtrl.valueChanges
+        .pipe(
+          startWith(''),
+          map(value => this._filter(value))
+        );
+    }, 1000);
+  }
+
+  private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
 
-    return this.states.filter(state => state.name.toLowerCase().indexOf(filterValue) === 0);
+    return this.users && this.users.filter(option => option.name.toLowerCase().indexOf(filterValue) === 0);
   }
 
+  userSelection(user: any) {
+    this.usersService.userSelected = user;
+  }
 }
